@@ -1,13 +1,14 @@
 const fs = require('fs');
 const args = process.argv.slice(2);
+
 const readline = require('readline');
 
 const inputHtmlFile = args[0] || '/var/www/html/sntpms/pms-ui-staff/rover/partials/companyCard/rvCompanyCardContactInformation.html';
 
 // Load HTML file
-const moduleName = 'FRONT_DESK';
-const contextName = 'CO_TA_CARD';
-const translationJsonFile = '/var/www/html/sntpms/pms-ui-staff/rover/rvLocales/en/en_frontdesk.json';
+const moduleName = args[1] || 'FRONT_DESK';
+const contextName = args[2] || 'OTA';
+const translationJsonFile = args[3] || '/var/www/html/sntpms/pms-ui-staff/rover/rvLocales/en/en_frontdesk.json';
 
 const outputHtmlFile = inputHtmlFile;
 
@@ -150,7 +151,7 @@ const updateTranslations = () => {
     });
 
     // To update attribute translation
-    htmlContent = htmlContent.replace(/(?<=<[^>"{}]*(?:"[^"]*"[^>"{}]*)*(translate)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)([\w\s#]+)(?=<\/([a-z]+)>)/gm, (match, existingKey) => {
+    htmlContent = htmlContent.replace(/(?<=<[^>"{}]*(?:"[^"]*"[^>"{}]*)*(translate)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)([\w\s#]+)(?=<\/([a-z]+)>)/gm, (match, translate,existingKey) => {
         if(existingKey.trim() && !existingKey.trim().includes('{{')) {
           const oldKey = translationKeyCleanup(existingKey);
           const newkey = `${moduleName}.${contextName}.${oldKey}`.toUpperCase();
