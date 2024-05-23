@@ -17,7 +17,7 @@ const defaultContextName = 'NEW_ALLOTMENT';
 /**
  * Outputs
  */
-const defaultTranslationJsonFile = '/rover/rvLocales/en/en_groups_mod.json';
+const defaultTranslationJsonFile = '/rover/rvLocales/locales_v2/en/en_groups_mod.json';
 
 /**
  * Non translatable words
@@ -141,10 +141,10 @@ const translationKeyCleanup = (key, isNew) => {
     if (inCurrentModuleKey) return inCurrentModuleKey;
     const legacyKey = findKey(enTranslations);
     if (legacyKey) return legacyKey;
+    // Allow only letters, numbers, hash and underscore
+    return key.replace(/\s+/g, '_').replace(/[^A-Za-z0-9_#]/g, '').replace(/^_+|_+$/g, '').replace(/_+/g, '_').toUpperCase();
   }
-  
-  // Allow only letters, numbers and underscores
-  return key.replace(/\s+/g, '_').replace(/[^A-Za-z0-9_#]/g, '').replace(/^_+|_+$/g, '').replace(/_+/g, '_').toUpperCase();
+  return key.trim();
 }
 
 // Function to update the translation keys and texts
