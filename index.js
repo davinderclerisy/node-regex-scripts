@@ -1,19 +1,49 @@
+/** 
+ * Node version: >=9.11.1
+ * Command: node index.js /var/www/html/sntpms/pms-ui-staff/rover/partials/companyCard/rvCompanyCardContactInformation.html
+ * 
+ * Example usage: 
+ * node index.js <Absolute_path_to_HTML_file> <Module_Name> <Context_Name> <Absolute_path_to_new_translation_JSON_file>
+*/
+const projectRoot = '/var/www/html/sntpms/pms-ui-staff';
+
+/**
+ * Inputs
+ */  
+const defaultFilePathToUpdate = '/rover/partials/companyCard/rvCompanyCardContactInformation.html';
+const defaultModuleName = 'GROUPS_MOD';
+const defaultContextName = 'NEW_ALLOTMENT';
+
+/**
+ * Outputs
+ */
+const defaultTranslationJsonFile = '/rover/rvLocales/en/en_groups_mod.json';
+
+/**
+ * Non translatable words
+ */
+const blackListedWords = [
+  '&nbsp;'
+];
+
+/**
+ * Code
+ */
 const fs = require('fs');
 const args = process.argv.slice(2);
 
-const readline = require('readline');
+const inputHtmlFile = args[0] || `${projectRoot}${defaultFilePathToUpdate}`;
+const moduleName = args[1] || defaultModuleName;
+const contextName = args[2] || defaultContextName;
+const translationJsonFile = args[3] || `${projectRoot}${defaultTranslationJsonFile}`;
 
-const inputHtmlFile = args[0] || '/var/www/html/sntpms/pms-ui-staff/rover/partials/companyCard/rvCompanyCardContactInformation.html';
-
-// Load HTML file
-const moduleName = args[1] || 'FRONT_DESK';
-const contextName = args[2] || 'OTA';
-const translationJsonFile = args[3] || '/var/www/html/sntpms/pms-ui-staff/rover/rvLocales/en/en_frontdesk.json';
 
 const outputHtmlFile = inputHtmlFile;
 
-const enJsonFile = '/var/www/html/sntpms/pms-ui-staff/dist/rvLocales/EN.json';
+const enJsonFile = `${projectRoot}/dist/rvLocales/EN.json`;
 const enTranslations = JSON.parse(fs.readFileSync(enJsonFile, 'utf-8'));
+
+const readline = require('readline');
 
 // Function to prompt user input
 const promptUser = (currentKey) => {
@@ -85,24 +115,20 @@ let htmlContent = fs.readFileSync(inputHtmlFile, 'utf-8');
 // Load translation JSON file
 let translations;
 if (fs.existsSync(translationJsonFile)) {
-    try {
-        translations = JSON.parse(fs.readFileSync(translationJsonFile, 'utf-8'));
-    } catch (error) {
-        translations = {};
-    }
+  try {
+    translations = JSON.parse(fs.readFileSync(translationJsonFile, 'utf-8'));
+  } catch (error) {
+    translations = {};
+  }
 }
 
-if(!translations[moduleName]) {
+if (!translations[moduleName]) {
   translations[moduleName] = {};
 }
 
-if(!translations[moduleName][contextName]) {
+if (!translations[moduleName][contextName]) {
   translations[moduleName][contextName] = {};
 }
-
-const blackListedWords = [
-  '&nbsp;'
-]
 
 let newTranslationKeys = {};
 
@@ -151,7 +177,7 @@ const updateTranslations = () => {
     });
 
     // To update attribute translation
-    htmlContent = htmlContent.replace(/(?<=<[^>"{}]*(?:"[^"]*"[^>"{}]*)*(translate)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)([\w\s#]+)(?=<\/([a-z]+)>)/gm, (match, translate,existingKey) => {
+    htmlContent = htmlContent.replace(/(?<=<[^>"{}]*(?:"[^"]*"[^>"{}]*)*(translate)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)([\w\s#.]+)(?=<\/([a-z]+)>)/gi, (match, _, existingKey) => {
         if(existingKey.trim() && !existingKey.trim().includes('{{')) {
           const oldKey = translationKeyCleanup(existingKey);
           const newkey = `${moduleName}.${contextName}.${oldKey}`.toUpperCase();
@@ -177,7 +203,7 @@ const updateTranslations = () => {
     console.log('\n\n\n');
     
     // Update placeholder values
-    htmlContent = htmlContent.replace(/(?<=<[^>]*\s+placeholder\s*=\s*")([^"]+)(?="[^>]*>)/g, (match) => {
+    htmlContent = htmlContent.replace(/(?<=<[^>]*\s+placeholder\s*=\s*")([^"]+)(?="[^>]*>)/gi, (match) => {
         if(!match.trim().includes('{{')) {
           const placeholderKey = `${moduleName}.${contextName}.${translationKeyCleanup(match, true)}`;
           console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', match.replace(/\s+/g, ' ').trim(), placeholderKey);
@@ -190,7 +216,7 @@ const updateTranslations = () => {
     });
 
     // Update label values
-    htmlContent = htmlContent.replace(/(?<=<[^>]*label\s*=\s*")([^"]+)(?="[^>]*>)/g, (match) => {
+    htmlContent = htmlContent.replace(/(?<=<[^>]*label\s*=\s*")([^"]+)(?="[^>]*>)/gi, (match) => {
         if(!match.trim().includes('{{')) {
           const placeholderKey = `${moduleName}.${contextName}.${translationKeyCleanup(match, true)}`;
           console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', match.replace(/\s+/g, ' ').trim(), placeholderKey);
@@ -203,7 +229,7 @@ const updateTranslations = () => {
     });
 
     // Update between starting and ending tags
-    htmlContent = htmlContent.replace(/(?<=<([a-z]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)([A-Za-z\s\d(),.\/\\&;+!\-':#?]*[A-Za-z]{1,}[A-Za-z\s\d(),.\/\\&;+!\-':#?]*)(?=<\/([a-z]+)>)/g, (match) => {
+    htmlContent = htmlContent.replace(/(?<=<([a-z]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)([A-Za-z\s\d(),.\/\\&;+!\-':#?]*[A-Za-z]{1,}[A-Za-z\s\d(),.\/\\&;+!\-':#?]*)(?=<\/([a-z]+)>)/gi, (match) => {
       if(!blackListedWords.includes(match.trim())) {
         const placeholderKey = `${moduleName}.${contextName}.${translationKeyCleanup(match, true)}`;
         console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', match.replace(/\s+/g, ' ').trim(), placeholderKey);
@@ -216,7 +242,7 @@ const updateTranslations = () => {
     });
 
     // Update between two starting tags
-    htmlContent = htmlContent.replace(/(?<=<([a-z]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)([A-Za-z\s\d(),.\/\\&;+!\-':#?]*[A-Za-z]{1,}[A-Za-z\s\d(),.\/\\&;+!\-':#?]*)(?=<([a-z]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)/g, (match) => {
+    htmlContent = htmlContent.replace(/(?<=<([a-z]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)([A-Za-z\s\d(),.\/\\&;+!\-':#?]*[A-Za-z]{1,}[A-Za-z\s\d(),.\/\\&;+!\-':#?]*)(?=<([a-z]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)/gi, (match) => {
       if(!blackListedWords.includes(match.trim())) {
         const placeholderKey = `${moduleName}.${contextName}.${translationKeyCleanup(match, true)}`;
         console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', match.replace(/\s+/g, ' ').trim(), placeholderKey);
@@ -229,7 +255,7 @@ const updateTranslations = () => {
     });
 
     // Update between ending and starting tags
-    htmlContent = htmlContent.replace(/(?<=<\/([a-z]+)>)([A-Za-z\s\d(),.\/\\&;+!\-':#?]*[A-Za-z]{1,}[A-Za-z\s\d(),.\/\\&;+!\-':#?]*)(?=<([a-z]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)/g, (match) => {
+    htmlContent = htmlContent.replace(/(?<=<\/([a-z]+)>)([A-Za-z\s\d(),.\/\\&;+!\-':#?]*[A-Za-z]{1,}[A-Za-z\s\d(),.\/\\&;+!\-':#?]*)(?=<([a-z]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)/gi, (match) => {
       if(!blackListedWords.includes(match.trim())) {
         const placeholderKey = `${moduleName}.${contextName}.${translationKeyCleanup(match, true)}`;
         console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', match.replace(/\s+/g, ' ').trim(), placeholderKey);
@@ -242,7 +268,7 @@ const updateTranslations = () => {
     });
 
     // Update between two ending tags
-    htmlContent = htmlContent.replace(/(?<=<\/([a-z]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)([A-Za-z\s\d(),.\/\\&;+!\-':#?]*[A-Za-z]{1,}[A-Za-z\s\d(),.\/\\&;+!\-':#?]*)(?=<\/([a-z]+)>)/g, (match) => {
+    htmlContent = htmlContent.replace(/(?<=<\/([a-z]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)([A-Za-z\s\d(),.\/\\&;+!\-':#?]*[A-Za-z]{1,}[A-Za-z\s\d(),.\/\\&;+!\-':#?]*)(?=<\/([a-z]+)>)/gi, (match) => {
       if(!blackListedWords.includes(match.trim())) {
         const placeholderKey = `${moduleName}.${contextName}.${translationKeyCleanup(match, true)}`;
         console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', match.replace(/\s+/g, ' ').trim(), placeholderKey);
@@ -256,7 +282,7 @@ const updateTranslations = () => {
 
 
     // Update self ending tag and ending tags
-    htmlContent = htmlContent.replace(/(?<=<\/([a-z]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)([A-Za-z\s\d(),.\/\\&;+!\-':#?]*[A-Za-z]{1,}[A-Za-z\s\d(),.\/\\&;+!\-':#?]*)(?=<\/([a-z]+)>)/g, (match) => {
+    htmlContent = htmlContent.replace(/(?<=<\/([a-z]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)([A-Za-z\s\d(),.\/\\&;+!\-':#?]*[A-Za-z]{1,}[A-Za-z\s\d(),.\/\\&;+!\-':#?]*)(?=<\/([a-z]+)>)/gi, (match) => {
       if(!blackListedWords.includes(match.trim())) {
         const placeholderKey = `${moduleName}.${contextName}.${translationKeyCleanup(match, true)}`;
         console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', match.replace(/\s+/g, ' ').trim(), placeholderKey);
@@ -269,7 +295,7 @@ const updateTranslations = () => {
     });
 
     // Reinsert comments
-    htmlContent = htmlContent.replace(/<!--comment(\d+)-->/g, (match, commentIndex) => {
+    htmlContent = htmlContent.replace(/<!--comment(\d+)-->/g, (_, commentIndex) => {
       return comments[commentIndex];
     });
 };
@@ -307,7 +333,7 @@ const updateTranslations = () => {
 
       htmlContent = htmlContent.replace(`${moduleName}.${contextName}.${longKey}`, newPlaceholderKey);
       translations[moduleName][contextName][cleanedInput] = translations[moduleName][contextName][longKey];
-      delete translations[moduleName][contextName][longKey];
+      if(cleanedInput !== longKey)delete translations[moduleName][contextName][longKey];
     }
   }
   // Save updated HTML content
