@@ -12,7 +12,7 @@ const projectRoot = '/var/www/html/sntpms/pms-ui-staff';
  */  
 const defaultFilePathToUpdate = '/rover/partials/companyCard/rvCompanyCardContactInformation.html';
 const defaultModuleName = 'GROUPS_MOD';
-const defaultContextName = 'NEW_ALLOTMENT';
+const defaultContextName = 'ALLOTMENTS';
 
 /**
  * Outputs
