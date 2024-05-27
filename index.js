@@ -28,6 +28,15 @@ const blackListedWords = [
 ];
 
 /**
+ * Predefined translation keys
+ */
+const predefinedTranslationKeys = {
+  DAY_SYMBOL: 'D',
+  NIGHT_SYMBOL: 'N',
+  EOD: 'End of Day',
+};
+
+/**
  * Code
  */
 const fs = require('fs');
@@ -42,7 +51,7 @@ const translationJsonFile = args[3] || `${projectRoot}${defaultTranslationJsonFi
 const outputHtmlFile = inputHtmlFile;
 
 const enJsonFile = `${projectRoot}/dist/rvLocales/EN.json`;
-const enTranslations = JSON.parse(fs.readFileSync(enJsonFile, 'utf-8'));
+// const enTranslations = JSON.parse(fs.readFileSync(enJsonFile, 'utf-8'));
 
 const readline = require('readline');
 
@@ -152,13 +161,20 @@ const translationKeyCleanup = (key, isNew) => {
     const findKey = (obj) => Object.keys(obj).find(k => obj[k] === key.trim());
     const inCurrentModuleKey = findKey(translations[moduleName][contextName]);
     if (inCurrentModuleKey) return inCurrentModuleKey;
-    const legacyKey = findKeyByValue(
-      Object.keys(enTranslations).reduce(
-        (acc, key) => (typeof enTranslations[key] === 'object' ? { ...acc, [key]: enTranslations[key] } : acc), {}
-      ), key.trim()
-    );
-    if (legacyKey) return legacyKey;
-    // Allow only letters, numbers, hash and underscore
+
+    // find in predefined keys
+    const predefinedKey = findKey(predefinedTranslationKeys, key.trim());
+    if (predefinedKey) return predefinedKey;
+
+    // const legacyKey = findKeyByValue(
+    //   Object.keys(enTranslations).reduce(
+    //     (acc, key) => (typeof enTranslations[key] === 'object' ? { ...acc, [key]: enTranslations[key] } : acc), {}
+    //   ), key.trim()
+    // );
+    // if (legacyKey) return legacyKey;
+
+
+    // Generate a new key by allow only letters, numbers, hash and underscore
     return key.replace(/\s+/g, '_').replace(/[^A-Za-z0-9_#]/g, '').replace(/^_+|_+$/g, '').replace(/_+/g, '_').toUpperCase();
   }
   return key.trim();
