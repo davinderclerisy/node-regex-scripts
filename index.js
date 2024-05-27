@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /** 
  * Node version: >=9.11.1
  * Command: node index.js /var/www/html/sntpms/pms-ui-staff/rover/partials/companyCard/rvCompanyCardContactInformation.html

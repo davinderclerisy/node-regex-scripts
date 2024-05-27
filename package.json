@@ -1,0 +1,27 @@
+{
+  "name": "node-regex-scripts",
+  "version": "1.0.0",
+  "description": "regex scripts",
+  "main": "index.js",
+  "bin": {
+    "nrs-regex": "index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davinderclerisy/node-regex-scripts.git"
+  },
+  "keywords": [
+    "node",
+    "regex",
+    "scripts"
+  ],
+  "author": "davinder",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/davinderclerisy/node-regex-scripts/issues"
+  },
+  "homepage": "https://github.com/davinderclerisy/node-regex-scripts#readme"
+}
