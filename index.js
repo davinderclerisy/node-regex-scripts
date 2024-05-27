@@ -12,13 +12,13 @@ const projectRoot = '/var/www/html/sntpms/pms-ui-staff';
  * Inputs
  */  
 const defaultFilePathToUpdate = '/rover/partials/companyCard/rvCompanyCardContactInformation.html';
-const defaultModuleName = 'GROUPS_MOD';
-const defaultContextName = 'ALLOTMENTS';
+const defaultModuleName = 'REVENUE_MANAGEMENT';
+const defaultContextName = 'RATE_MANAGER';
 
 /**
  * Outputs
  */
-const defaultTranslationJsonFile = '/rover/rvLocales/locales_v2/en/en_groups_mod.json';
+const defaultTranslationJsonFile = '/rover/rvLocales/locales_v2/en/en_revenue_management.json';
 
 /**
  * Non translatable words
@@ -133,6 +133,18 @@ if (!translations[moduleName][contextName]) {
 
 let newTranslationKeys = {};
 
+const findKeyByValue = (obj, key) => {
+  for (const k in obj) {
+    if (typeof obj[k] === 'object') {
+      const result = findKeyByValue(obj[k], key);
+      if (result) return result;
+    } else if (obj[k] === key) {
+      return k;
+    }
+  }
+  return null;
+}
+
 // Translation key cleanup
 const translationKeyCleanup = (key, isNew) => {
   // If found value in en.json
@@ -140,7 +152,11 @@ const translationKeyCleanup = (key, isNew) => {
     const findKey = (obj) => Object.keys(obj).find(k => obj[k] === key.trim());
     const inCurrentModuleKey = findKey(translations[moduleName][contextName]);
     if (inCurrentModuleKey) return inCurrentModuleKey;
-    const legacyKey = findKey(enTranslations);
+    const legacyKey = findKeyByValue(
+      Object.keys(enTranslations).reduce(
+        (acc, key) => (typeof enTranslations[key] === 'object' ? { ...acc, [key]: enTranslations[key] } : acc), {}
+      ), key.trim()
+    );
     if (legacyKey) return legacyKey;
     // Allow only letters, numbers, hash and underscore
     return key.replace(/\s+/g, '_').replace(/[^A-Za-z0-9_#]/g, '').replace(/^_+|_+$/g, '').replace(/_+/g, '_').toUpperCase();
