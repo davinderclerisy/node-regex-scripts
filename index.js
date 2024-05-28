@@ -10,7 +10,7 @@ const projectRoot = '/var/www/html/sntpms/pms-ui-staff';
 
 /**
  * Inputs
- */  
+ */
 const defaultFilePathToUpdate = '/rover/partials/companyCard/rvCompanyCardContactInformation.html';
 const defaultModuleName = 'ACTIONS';
 const defaultContextName = 'ACTIONS_MANAGER';
@@ -52,7 +52,7 @@ const translationJsonFile = args[3] || `${projectRoot}${defaultTranslationJsonFi
 const outputHtmlFile = inputHtmlFile;
 
 const enJsonFile = `${projectRoot}/dist/rvLocales/EN.json`;
-// const enTranslations = JSON.parse(fs.readFileSync(enJsonFile, 'utf-8'));
+const enTranslations = JSON.parse(fs.readFileSync(enJsonFile, 'utf-8'));
 
 const readline = require('readline');
 
@@ -167,14 +167,6 @@ const translationKeyCleanup = (key, isNew) => {
     const predefinedKey = findKey(predefinedTranslationKeys, key.trim());
     if (predefinedKey) return predefinedKey;
 
-    // const legacyKey = findKeyByValue(
-    //   Object.keys(enTranslations).reduce(
-    //     (acc, key) => (typeof enTranslations[key] === 'object' ? { ...acc, [key]: enTranslations[key] } : acc), {}
-    //   ), key.trim()
-    // );
-    // if (legacyKey) return legacyKey;
-
-
     // Generate a new key by allow only letters, numbers, hash and underscore
     return key.replace(/\s+/g, '_').replace(/[^A-Za-z0-9_#]/g, '').replace(/^_+|_+$/g, '').replace(/_+/g, '_').toUpperCase();
   }
@@ -194,37 +186,37 @@ const updateTranslations = () => {
     // To update interpolation translation
     htmlContent = htmlContent.replace(/\{\{\s*'([^']*)'\s*\|\s*translate\s*\}\}/g, (match, existingKey) => {
         const oldKey = translationKeyCleanup(existingKey);
-        const newkey = `${moduleName}.${contextName}.${oldKey}`.toUpperCase();
+        let newkey = `${moduleName}.${contextName}.${oldKey}`.toUpperCase();
         if (!translations[moduleName][contextName][newkey]) {
           // If the key is not already present, try to find its value in en.json
-          const enTranslations = JSON.parse(fs.readFileSync(enJsonFile, 'utf-8'));
           if (enTranslations.hasOwnProperty(oldKey)) {
             console.log('\x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', oldKey, newkey);
             translations[moduleName][contextName][oldKey] = enTranslations[oldKey];
           } else {
-            console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', match.replace(/\s+/g, ' ').trim(), newkey);
-            newTranslationKeys[oldKey] = match.replace(/\s+/g, ' ').trim();
-            translations[moduleName][contextName][translationKeyCleanup(existingKey, true)] = match.replace(/\s+/g, ' ').trim();
+            newkey = `${moduleName}.${contextName}.${translationKeyCleanup(existingKey, true)}`;
+            console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', existingKey, newkey);
+            newTranslationKeys[oldKey] = existingKey;
+            translations[moduleName][contextName][translationKeyCleanup(existingKey, true)] = existingKey;
           }
         }
         return `{{'${newkey}' | translate}}`;
     });
 
     // To update attribute translation
-    htmlContent = htmlContent.replace(/(?<=<[^>"{}]*(?:"[^"]*"[^>"{}]*)*(translate)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)([\w\s#.]+)(?=<\/([a-z]+)>)/gi, (match, _, existingKey) => {
+    htmlContent = htmlContent.replace(/(?<=<[^>"{}]*(?:"[^"]*"[^>"{}]*)*(translate)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)([\w\s#.]+)(?=<\/([a-z\d]+)>)/gi, (match, _, existingKey) => {
         if(existingKey.trim() && !existingKey.trim().includes('{{')) {
           const oldKey = translationKeyCleanup(existingKey);
-          const newkey = `${moduleName}.${contextName}.${oldKey}`.toUpperCase();
+          let newkey = `${moduleName}.${contextName}.${oldKey}`.toUpperCase();
           if (!translations[moduleName][contextName][newkey]) {
             // If the key is not already present, try to find its value in en.json
-            const enTranslations = JSON.parse(fs.readFileSync(enJsonFile, 'utf-8'));
             if (enTranslations.hasOwnProperty(oldKey)) {
               console.log('\x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', oldKey, newkey);
               translations[moduleName][contextName][oldKey] = enTranslations[oldKey];
             } else {
-              console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', match.replace(/\s+/g, ' ').trim(), newkey);
-              newTranslationKeys[oldKey] = match.replace(/\s+/g, ' ').trim();
-              translations[moduleName][contextName][translationKeyCleanup(existingKey, true)] = match.replace(/\s+/g, ' ').trim();
+              newkey = `${moduleName}.${contextName}.${translationKeyCleanup(existingKey, true)}`;
+              console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', existingKey, newkey);
+              newTranslationKeys[oldKey] = existingKey;
+              translations[moduleName][contextName][translationKeyCleanup(existingKey, true)] = existingKey;
             }
           }
           return `${newkey}`;
@@ -263,52 +255,52 @@ const updateTranslations = () => {
     });
 
     // Update between starting and ending tags
-    htmlContent = htmlContent.replace(/(?<=<([a-z]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)([A-Za-z\s\d(),.\/\\&;+!\-':#?]*[A-Za-z]{1,}[A-Za-z\s\d(),.\/\\&;+!\-':#?]*)(?=<\/([a-z]+)>)/gi, (match) => {
+    htmlContent = htmlContent.replace(/(?<=<([a-z\d]+)(?![^>]*\btranslate\b)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)(\s*)([A-Za-z\s\d(),\/\\&;+!\-':#?.]*[A-Za-z\d]{1,}[A-Za-z\d(),\/\\&;+!\-':#?.]*)(\s*)(?=<\/([a-z\d]+)>)/gi, (match, ...args) => {
       if(!blackListedWords.includes(match.trim())) {
         const placeholderKey = `${moduleName}.${contextName}.${translationKeyCleanup(match, true)}`;
         console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', match.replace(/\s+/g, ' ').trim(), placeholderKey);
         translations[moduleName][contextName][translationKeyCleanup(match, true)] = match.replace(/\s+/g, ' ').trim();
         newTranslationKeys[translationKeyCleanup(match, true)] = match.replace(/\s+/g, ' ').trim();
-        return `{{'${placeholderKey}' | translate}}`;
+        return `${args[1]}{{'${placeholderKey}' | translate}}${args[3]}`;
       } else {
         return match;
       }
     });
 
     // Update between two starting tags
-    htmlContent = htmlContent.replace(/(?<=<([a-z]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)([A-Za-z\s\d(),.\/\\&;+!\-':#?]*[A-Za-z]{1,}[A-Za-z\s\d(),.\/\\&;+!\-':#?]*)(?=<([a-z]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)/gi, (match) => {
+    htmlContent = htmlContent.replace(/(?<=<([a-z\d]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)(\s*)([A-Za-z\s\d(),\/\\&;+!\-':#?.]*[A-Za-z\d]{1,}[A-Za-z\d(),\/\\&;+!\-':#?.]*)(\s*)(?=<([a-z\d]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)/gi, (match, ...args) => {
       if(!blackListedWords.includes(match.trim())) {
         const placeholderKey = `${moduleName}.${contextName}.${translationKeyCleanup(match, true)}`;
         console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', match.replace(/\s+/g, ' ').trim(), placeholderKey);
         translations[moduleName][contextName][translationKeyCleanup(match, true)] = match.replace(/\s+/g, ' ').trim();
         newTranslationKeys[translationKeyCleanup(match, true)] = match.replace(/\s+/g, ' ').trim();
-        return `{{'${placeholderKey}' | translate}}`;
+        return `${args[1]}{{'${placeholderKey}' | translate}}${args[3]}`;
       } else {
         return match;
       }
     });
 
     // Update between ending and starting tags
-    htmlContent = htmlContent.replace(/(?<=<\/([a-z]+)>)([A-Za-z\s\d(),.\/\\&;+!\-':#?]*[A-Za-z]{1,}[A-Za-z\s\d(),.\/\\&;+!\-':#?]*)(?=<([a-z]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)/gi, (match) => {
+    htmlContent = htmlContent.replace(/(?<=<\/([a-z\d]+)>)(\s*)([A-Za-z\s\d(),\/\\&;+!\-':#?.]*[A-Za-z\d]{1,}[A-Za-z\d(),\/\\&;+!\-':#?.]*)(\s*)(?=<([a-z\d]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)/gi, (match, ...args) => {
       if(!blackListedWords.includes(match.trim())) {
         const placeholderKey = `${moduleName}.${contextName}.${translationKeyCleanup(match, true)}`;
         console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', match.replace(/\s+/g, ' ').trim(), placeholderKey);
         translations[moduleName][contextName][translationKeyCleanup(match, true)] = match.replace(/\s+/g, ' ').trim();
         newTranslationKeys[translationKeyCleanup(match, true)] = match.replace(/\s+/g, ' ').trim();
-        return `{{'${placeholderKey}' | translate}}`;
+        return `${args[1]}{{'${placeholderKey}' | translate}}${args[3]}`;
       } else {
         return match;
       }
     });
 
     // Update between two ending tags
-    htmlContent = htmlContent.replace(/(?<=<\/([a-z]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)([A-Za-z\s\d(),.\/\\&;+!\-':#?]*[A-Za-z]{1,}[A-Za-z\s\d(),.\/\\&;+!\-':#?]*)(?=<\/([a-z]+)>)/gi, (match) => {
+    htmlContent = htmlContent.replace(/(?<=<\/([a-z\d]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)(\s*)([A-Za-z\s\d(),\/\\&;+!\-':#?.]*[A-Za-z\d]{1,}[A-Za-z\d(),\/\\&;+!\-':#?.]*)(\s*)(?=<\/([a-z\d]+)>)/gi, (match, ...args) => {
       if(!blackListedWords.includes(match.trim())) {
         const placeholderKey = `${moduleName}.${contextName}.${translationKeyCleanup(match, true)}`;
         console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', match.replace(/\s+/g, ' ').trim(), placeholderKey);
         translations[moduleName][contextName][translationKeyCleanup(match, true)] = match.replace(/\s+/g, ' ').trim();
         newTranslationKeys[translationKeyCleanup(match, true)] = match.replace(/\s+/g, ' ').trim();
-        return `{{'${placeholderKey}' | translate}}`;
+        return `${args[1]}{{'${placeholderKey}' | translate}}${args[3]}`;
       } else {
         return match;
       }
@@ -316,13 +308,13 @@ const updateTranslations = () => {
 
 
     // Update self ending tag and ending tags
-    htmlContent = htmlContent.replace(/(?<=<\/([a-z]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)([A-Za-z\s\d(),.\/\\&;+!\-':#?]*[A-Za-z]{1,}[A-Za-z\s\d(),.\/\\&;+!\-':#?]*)(?=<\/([a-z]+)>)/gi, (match) => {
+    htmlContent = htmlContent.replace(/(?<=<\/([a-z\d]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)(\s*)([A-Za-z\s\d(),\/\\&;+!\-':#?.]*[A-Za-z\d]{1,}[A-Za-z\d(),\/\\&;+!\-':#?.]*)(\s*)(?=<\/([a-z\d]+)>)/gi, (match, ...args) => {
       if(!blackListedWords.includes(match.trim())) {
         const placeholderKey = `${moduleName}.${contextName}.${translationKeyCleanup(match, true)}`;
         console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', match.replace(/\s+/g, ' ').trim(), placeholderKey);
         translations[moduleName][contextName][translationKeyCleanup(match, true)] = match.replace(/\s+/g, ' ').trim();
         newTranslationKeys[translationKeyCleanup(match, true)] = match.replace(/\s+/g, ' ').trim();
-        return `{{'${placeholderKey}' | translate}}`;
+        return `${args[1]}{{'${placeholderKey}' | translate}}${args[3]}`;
       } else {
         return match;
       }
