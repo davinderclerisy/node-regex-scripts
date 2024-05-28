@@ -12,13 +12,13 @@ const projectRoot = '/var/www/html/sntpms/pms-ui-staff';
  * Inputs
  */  
 const defaultFilePathToUpdate = '/rover/partials/companyCard/rvCompanyCardContactInformation.html';
-const defaultModuleName = 'REVENUE_MANAGEMENT';
-const defaultContextName = 'RATE_MANAGER';
+const defaultModuleName = 'ACTIONS';
+const defaultContextName = 'ACTIONS_MANAGER';
 
 /**
  * Outputs
  */
-const defaultTranslationJsonFile = '/rover/rvLocales/locales_v2/en/en_revenue_management.json';
+const defaultTranslationJsonFile = '/rover/rvLocales/locales_v2/en/en_actions.json';
 
 /**
  * Non translatable words
@@ -33,6 +33,7 @@ const blackListedWords = [
 const predefinedTranslationKeys = {
   DAY_SYMBOL: 'D',
   NIGHT_SYMBOL: 'N',
+  BASE_RATE_SYMBOL: 'B',
   EOD: 'End of Day',
 };
 
