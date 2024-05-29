@@ -34,6 +34,8 @@ const predefinedTranslationKeys = {
   DAY_SYMBOL: 'D',
   NIGHT_SYMBOL: 'N',
   BASE_RATE_SYMBOL: 'B',
+  ACCOUNT_SYMBOL: 'A',
+  NOT_AVAILABLE: 'N/A',
   EOD: 'End of Day',
 };
 
@@ -255,7 +257,7 @@ const updateTranslations = () => {
     });
 
     // Update between starting and ending tags
-    htmlContent = htmlContent.replace(/(?<=<([a-z\d]+)(?![^>]*\btranslate\b)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)(\s*)([A-Za-z\s\d(),\/\\&;+!\-':#?.]*[A-Za-z\d]{1,}[A-Za-z\d(),\/\\&;+!\-':#?.]*)(\s*)(?=<\/([a-z\d]+)>)/gi, (match, ...args) => {
+    htmlContent = htmlContent.replace(/(?<=<([A-Za-z\d]+)(?![^>]*\btranslate\b)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)(\s*)([A-Za-z\s\d(),\/\\&;+!\-':#?.]*[A-Za-z]{1,}[A-Za-z\s\d(),\/\\&;+!\-':#?.]*?)(\s*)(?=<\/([A-Za-z\d]+)>)/gi, (match, ...args) => {
       if(!blackListedWords.includes(match.trim())) {
         const placeholderKey = `${moduleName}.${contextName}.${translationKeyCleanup(match, true)}`;
         console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', match.replace(/\s+/g, ' ').trim(), placeholderKey);
@@ -268,7 +270,7 @@ const updateTranslations = () => {
     });
 
     // Update between two starting tags
-    htmlContent = htmlContent.replace(/(?<=<([a-z\d]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)(\s*)([A-Za-z\s\d(),\/\\&;+!\-':#?.]*[A-Za-z\d]{1,}[A-Za-z\d(),\/\\&;+!\-':#?.]*)(\s*)(?=<([a-z\d]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)/gi, (match, ...args) => {
+    htmlContent = htmlContent.replace(/(?<=<([A-Za-z\d]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)(\s*)([A-Za-z\s\d(),\/\\&;+!\-':#?.]*[A-Za-z]{1,}[A-Za-z\s\d(),\/\\&;+!\-':#?.]*?)(\s*)(?=<([A-Za-z\d]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)/gi, (match, ...args) => {
       if(!blackListedWords.includes(match.trim())) {
         const placeholderKey = `${moduleName}.${contextName}.${translationKeyCleanup(match, true)}`;
         console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', match.replace(/\s+/g, ' ').trim(), placeholderKey);
@@ -281,7 +283,7 @@ const updateTranslations = () => {
     });
 
     // Update between ending and starting tags
-    htmlContent = htmlContent.replace(/(?<=<\/([a-z\d]+)>)(\s*)([A-Za-z\s\d(),\/\\&;+!\-':#?.]*[A-Za-z\d]{1,}[A-Za-z\d(),\/\\&;+!\-':#?.]*)(\s*)(?=<([a-z\d]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)/gi, (match, ...args) => {
+    htmlContent = htmlContent.replace(/(?<=<\/([A-Za-z\d]+)>)(\s*)([A-Za-z\s\d(),\/\\&;+!\-':#?.]*[A-Za-z]{1,}[A-Za-z\s\d(),\/\\&;+!\-':#?.]*?)(\s*)(?=<([A-Za-z\d]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)/gi, (match, ...args) => {
       if(!blackListedWords.includes(match.trim())) {
         const placeholderKey = `${moduleName}.${contextName}.${translationKeyCleanup(match, true)}`;
         console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', match.replace(/\s+/g, ' ').trim(), placeholderKey);
@@ -294,7 +296,7 @@ const updateTranslations = () => {
     });
 
     // Update between two ending tags
-    htmlContent = htmlContent.replace(/(?<=<\/([a-z\d]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)(\s*)([A-Za-z\s\d(),\/\\&;+!\-':#?.]*[A-Za-z\d]{1,}[A-Za-z\d(),\/\\&;+!\-':#?.]*)(\s*)(?=<\/([a-z\d]+)>)/gi, (match, ...args) => {
+    htmlContent = htmlContent.replace(/(?<=<\/([A-Za-z\d]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)(\s*)([A-Za-z\s\d(),\/\\&;+!\-':#?.]*[A-Za-z]{1,}[A-Za-z\s\d(),\/\\&;+!\-':#?.]*?)(\s*)(?=<\/([A-Za-z\d]+)>)/gi, (match, ...args) => {
       if(!blackListedWords.includes(match.trim())) {
         const placeholderKey = `${moduleName}.${contextName}.${translationKeyCleanup(match, true)}`;
         console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', match.replace(/\s+/g, ' ').trim(), placeholderKey);
@@ -308,7 +310,7 @@ const updateTranslations = () => {
 
 
     // Update self ending tag and ending tags
-    htmlContent = htmlContent.replace(/(?<=<\/([a-z\d]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)(\s*)([A-Za-z\s\d(),\/\\&;+!\-':#?.]*[A-Za-z\d]{1,}[A-Za-z\d(),\/\\&;+!\-':#?.]*)(\s*)(?=<\/([a-z\d]+)>)/gi, (match, ...args) => {
+    htmlContent = htmlContent.replace(/(?<=<\/([A-Za-z\d]+)[^>"{}]*(?:"[^"]*"[^>"{}]*)*>)(\s*)([A-Za-z\s\d(),\/\\&;+!\-':#?.]*[A-Za-z]{1,}[A-Za-z\s\d(),\/\\&;+!\-':#?.]*?)(\s*)(?=<\/([A-Za-z\d]+)>)/gi, (match, ...args) => {
       if(!blackListedWords.includes(match.trim())) {
         const placeholderKey = `${moduleName}.${contextName}.${translationKeyCleanup(match, true)}`;
         console.log('New key: \x1b[31m%s\x1b[0m to \x1b[32m%s\x1b[0m', match.replace(/\s+/g, ' ').trim(), placeholderKey);
